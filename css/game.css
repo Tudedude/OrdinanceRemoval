@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css?family=Chewy');
+/* 
+ * dirt: #874f01
+ * dirtshade: #663b00
+ * grass: #3e9916
+ * grassshade: #2e7210
+*/
+body, html{
+	margin: 0;
+	padding: 0;
+	background-color: #874f01;
+	font-family: 'Chewy', cursive;
+	border-bottom: 5px solid #663b00;
+	border-right: 5px solid #663b00;
+	width: 100%;
+	height: 100%;
+	user-select: none;
+}
+html{
+	box-sizing: border-box;
+}
+body{
+	box-sizing: content-box;
+	overflow: hidden;
+}
+.titlePanel{
+	display: inline-block;
+	padding: 4px;
+	margin: 0;
+	font-size: 32px;
+	color: #e28604;
+	box-sizing: border-box;
+}
+
+.scorePanel{
+	display: inline-block;
+	float: right;
+	padding: 4px;
+	border-bottom: 5px solid #595959;
+	border-right: 5px solid #595959;
+	font-size: 24px;
+	color: black;
+	background-color: #ededed;
+	box-sizing: border-box;
+	margin-right: -5px;
+}
+
+.scoreText{
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.gamePanel{
+	/* whitespace fix */
+	font-size: 0px;
+	background-color: #3e9916;
+	border-bottom: 5px solid #2e7210;
+	border-right: 5px solid #2e7210;
+	width: 100vw;
+	height: 80%;
+	margin: 0 auto;
+	box-sizing: border-box;
+	padding: 3em 0;
+}
+
+.loadingVeneer{
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 10000;
+	background-color: white;
+	font-size: 48px;
+	width: 100vw;
+	height: 100vh;
+	color: black;
+	overflow: hidden;
+	text-align: center;
+}
+.loadingText{
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.gameMenu{
+	width: 100vw;
+	height: 75%;
+	background-color: rgba(36, 89, 13, 0.5);
+	position: fixed;
+	top: 0;
+	left: 0;
+	font-size: 0px;
+}
+
+.menuPanel{
+	position: relative;
+	background-color: #874f01;
+	border-bottom: 5px solid #663b00;
+	border-right: 5px solid #663b00;
+	margin: 0 auto;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+	display: inline-block;
+	padding: 32px;
+}
+
+.menuHeader{
+	font-size: 40px;
+	margin-bottom: 10px;
+}
+
+.gbutton{
+	padding: 0.5em;
+	color: #2e7210;
+	background-color: #3e9916;
+	border-bottom: 5px solid #2e7210;
+	border-right: 5px solid #2e7210;
+	font-size: 32px;
+	margin-bottom: 0.5em;
+	text-align: center;
+	cursor: pointer;
+}
+
+.gbutton:hover{
+	position: relative;
+	background-color: #2e7210;
+	color: #3e9916;
+	top: 2px;
+}
+
+.gbutton:active{
+	position: relative;
+	background-color: #1b430a;
+	color: #3e9916;
+	top: 5px;
+}
+
+.gridWrapper{
+	display: grid;
+	grid-gap: 0;
+	grid-template-columns: 1fr;
+	grid-template-rows: 1fr;
+	grid-auto-flow: row;
+	align-items: center;
+	justify-items: center;
+}
+
+.gameGrid{
+	display: grid;
+	grid-gap: 0;
+	grid-template-columns: repeat(8, 40px);
+  	grid-template-rows: repeat(8, 40px);
+  	grid-auto-flow: row;
+}
+
+.square[class*="even"]{
+	background-color: rgba(103, 206, 57, 0.5);
+}
+.square[class*="odd"]{
+	background-color: rgba(75, 173, 32, 0.5);
+}
+
+.square[class*="clicked"]{
+	cursor: default;
+	background-color: rgb(142, 142, 142);
+	border: 3px solid rgb(112, 112, 112);
+}
+
+.squareLabel{
+	position: relative;
+	top: 50%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-50%);
+	display: inline-block;
+	margin-top: -2px;
+}
+
+.bomb{
+	color: #f45f42;
+	background-color: rgb(30, 30, 30) !important;
+}
+
+.flagged:not(.clicked){
+	cursor: default;
+	background-image: url(../img/flag.png);
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+
+.incorrectFlag{
+	background-image: url(../img/brokenFlag.png) !important;
+}
+
+.resultsPanel{
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	z-index: 1000;
+	background-color: #874f01;
+	padding: 1.5em;
+	transform: translateX(-50%) translateY(-50%);
+	font-size: 24px;
+}
+
+.resultsHeader{
+	color: #e28604;
+	font-size: 36px;
+	text-align: center;
+}
+
+.fail, .succ {
+	font-weight: bold;
+	text-align: center;
+	font-size: 28px;
+}
+
+.fail{
+	color: #de4d17;
+}
+
+.succ{
+	color: #0ac528
+}
+
+@media only screen and (max-width: 600px){
+	.titlePanel{
+		display: block;
+		text-align: center;
+		width: 100%;
+		padding: 0px;
+		color: #e28604;
+		box-sizing: border-box;
+	}
+	.scorePanel{
+		display: block;
+		width: 100vw;
+		padding: 0px;
+		box-sizing: border-box;
+		text-align: center;
+	}
+	.gamePanel{
+		width: 100vw;
+		margin: 0px auto;
+		height: 80%;
+	}
+}
