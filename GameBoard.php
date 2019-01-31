@@ -43,7 +43,7 @@ class GameBoard{
 			$y = 0;
 			while(!$finished){
 				$x = rand(0, $this->width-1);
-				$y = rand(1, $this->height-1);
+				$y = rand(0, $this->height-1);
 				$finished = true;
 
 				foreach($_bombs as $bomb){
@@ -116,7 +116,7 @@ class GameBoard{
 		$data['flags'] = $this->flags;
 		$data['boardSeed'] = $this->boardSeed;
 		$data['board'] = $this->boardData;
-
+		
 		for($x = 0; $x < $this->width; $x++){
 
 			for($y = 0; $y < $this->height; $y++){
