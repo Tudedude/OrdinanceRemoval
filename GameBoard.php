@@ -71,27 +71,10 @@ class GameBoard{
 
 		$this->firstClick = true;
 
-		//var_dump($this->boardData);
-
-//		echo $this->calculateBombsInRange(1, 1);
-
 	}
 
 	function calculateBombsInRange($x, $y){
 		$bombs = 0;
-/*
-		for($_x = $x-1; $_x <= $x+1; $_x++){
-
-			for($_y = $y-1; $_y <= $y+1; $_y++){
-
-				if($_x == $x && $_y == $x)continue;
-				if($_x < 0 || $_x >= $this->width)continue;
-				if($_y < 0 || $_y >= $this->height)continue;
-
-				$square = $this->getSquare($_x, $_y);
-				if($square->isBomb)$bombs++;
-			}
-		}*/
 
 		$coords = array(array($x-1, $y-1), array($x-1, $y), array($x-1, $y+1), array($x, $y-1),
 						array($x, $y+1), array($x+1, $y-1), array($x+1, $y), array($x+1, $y+1));

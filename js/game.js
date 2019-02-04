@@ -27,6 +27,8 @@ $(function(){
 		$(".gameMenu").css("top", pos.top + parseInt(mt.substring(0, mt.length-2)));
 		$(".gameMenu").css("height", $(".gamePanel").height());
 
+		$(".menuPanel").css("top", ($(".gameMenu").height()-$(".menuPanel").outerHeight())/2);
+
 		resizeGrid();
 
 		$(window).resize(() => {
@@ -43,6 +45,9 @@ $(function(){
 			var mt = $(".gamePanel").css("margin-top");
 			$(".gameMenu").css("top", pos.top + parseInt(mt.substring(0, mt.length-2)));
 			$(".gameMenu").css("height", $(".gamePanel").height());
+
+
+			$(".menuPanel").css("top", ($(".gameMenu").height()-$(".menuPanel").outerHeight())/2);
 			
 			resizeGrid();
 
@@ -144,7 +149,7 @@ var updateBoard = function(data){
 		else oddRow = 1;
 	}
 
-	resizeGrid();
+	resizeGrid();	
 
 	if(data.lost == true || data.won == true){
 		gameRunning = false;
