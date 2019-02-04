@@ -1,4 +1,15 @@
 <?php
+/**
+ * OrdinanceRemoval PHP back-end
+ * 
+ * This script communicates with the game client
+ * via JSON transactions and carries out all game
+ * actions.
+ *
+ * @author Carson Faatz <me@tudedude.me>
+ * @version 1.0.0
+ */
+
 // prevent accessing without GET arguments
 if(!isset($_GET)){
 	die('{}');
@@ -197,16 +208,27 @@ if($_GET['a'] == "gB"){
 		}
 	}
 
+	// if no flags are remaining on click, game could be completed
 	if($b->flags == 0){
+
+		// assume game is completed successfully until we find otherwise
 		$finished = true;
+
+		// search through board for un-clicked or un-flagged squares
 		for($_y = 0; $_y < sizeof($b->boardData); $_y++){
+			
 			for($_x = 0; $_x < sizeof($b->boardData[$_y]); $_x++){
+				
 				if(!$b->boardData[$_y][$_x]->isClicked && !$b->boardData[$_y][$_x]->isFlagged){
+					
+					// if any squares are untouched, game is not finished
 					$finished = false;
 				}
 			}
 		}
+		// if the game is finished, signal that to the client and destroy the session board
 		if($finished){
+
 			$bData = $b->boardToJson(false);
 			$bData['won'] = true;
 			$bData['bombLocations'] = $b->bombLocations;
@@ -216,44 +238,78 @@ if($_GET['a'] == "gB"){
 		}
 	}
 
+	// track that a move has been made
 	$b->firstClick = false;
 
+	// re-serialize board and set to session variable
 	$_SESSION['board'] = serialize($b);
 
+	// return with new board state
 	die($b->boardToJson());
+
+// action == flag
 }else if($_GET['a'] == "fl"){
+
+	// if no session board is active and/or invalid parameters are set, prevent access
 	if(!isset($sessionBoard) || !isset($_GET['x']) || !isset($_GET['y'])){
 		die('{}');
+	}
+
+	// prevent access with invalid parameters
+	if(!(is_numeric($_GET['x']) && is_numeric($_GET['y']))){
+		die($b->boardToJson());
 	}
 
 	$b = $sessionBoard;
 	$x = intval($_GET['x']);
 	$y = intval($_GET['y']);
 
+	// if click is outside of board, do nothing
+	if($x < 0 || $x >= $b->width || $y < 0 || $y >= $b->height){
+		die($b->boardToJson());
+	}
+
+	// get object for clicked square
 	$sq = $b->getSquare($x, $y);
 
+	// if the square is already clicked, do nothing
 	if($sq->isClicked){
 		die($b->boardToJson());
 	}
 
+	// if square is flagged, remove flag and add to flag count
 	if($sq->isFlagged){
 		$sq->isFlagged = false;
 		$b->flags++;
+
+	// if square isn't flagged, flag it and remove from flag count
 	}else if($b->flags >= 0){
 		$sq->isFlagged = true;
 		$b->flags--;
 	}
 
+	// if no flags are remaining, game could be finished
 	if($b->flags == 0){
+
+		// assume game is completed successfully until we find otherwise
 		$finished = true;
+
+		// search through board for un-clicked or un-flagged squares
 		for($_y = 0; $_y < sizeof($b->boardData); $_y++){
+
 			for($_x = 0; $_x < sizeof($b->boardData[$_y]); $_x++){
+
 				if(!$b->boardData[$_y][$_x]->isClicked && !$b->boardData[$_y][$_x]->isFlagged){
+
+					// if any squares are untouched, game is not finished
 					$finished = false;
 				}
 			}
 		}
+
+		// if the game is finished, signal that to the client and destroy the session board
 		if($finished){
+
 			$bData = $b->boardToJson(false);
 			$bData['won'] = true;
 			$bData['bombLocations'] = $b->bombLocations;
@@ -263,22 +319,44 @@ if($_GET['a'] == "gB"){
 		}
 	}
 
+	// serialize new board state and return it to the client
 	$_SESSION['board'] = serialize($b);
 
 	die($b->boardToJson());
 }
 
+/**
+ * Find squares with 0 bombs nearby in a
+ * classic Minewseeper-style flood-fill pattern. 
+ * Returns an array of all squares to be clicked.
+ * @author Carson Faatz<me@tudedude.me>
+ * 
+ * @param int $x x coordinate to start search from
+ * @param int $y y coordinate to start search from
+ * @param GameBoard $board the board to search on
+ * @return array
+ */
 function flood($x, $y, $board){
+
+	// track visited squares to prevent redundancy
 	$visited = array();
+
+	// populate array with false values
 	for($_y = 0; $_y < $board->height; $_y++){
 		$visited[$_y] = array();
 		for($_x = 0; $_x < $board->width; $_x++){
 			$visited[$_y][$_x] = false;
 		}
 	}
+
+	// mark origin as visited
 	$visited[$y][$x] = true;
+
+	// track clicked squares and queue of search directions
 	$reveal = array();
 	$queue = array();
+
+	// queue search trees in all 8 directions
 	array_push($queue, new SearchNode($x-1, $y-1, $x, $y));
 	array_push($queue, new SearchNode($x, $y-1, $x, $y));
 	array_push($queue, new SearchNode($x+1, $y-1, $x, $y));
@@ -287,48 +365,84 @@ function flood($x, $y, $board){
 	array_push($queue, new SearchNode($x, $y+1, $x, $y));
 	array_push($queue, new SearchNode($x-1, $y+1, $x, $y));
 	array_push($queue, new SearchNode($x-1, $y, $x, $y));
+
+	// continue looping until the queue has emptied
 	while(count($queue) > 0){
+
+		// track variables from first search node in queue
 		$node = $queue[0];
 		$nX = $node->x;
 		$nY = $node->y;
+
+		// if node is out of the board dimensions, discard it and continue
 		if($nX < 0 || $nX >= $board->width || $nY < 0 || $nY >= $board->height){
 			array_shift($queue);
 			continue;
-		}else{
-			if($visited[$nY][$nX] == false){
-				$visited[$nY][$nX] = true;
-				if($board->getSquare($nX, $nY)->bombsInRange !== 0 && isset($board->getSquare($nX, $nY)->bombsInRange)){
-					array_push($reveal, array($nX, $nY));
-					array_shift($queue);
-					continue;
-				}else if($board->getSquare($nX, $nY)->bombsInRange == 0 && isset($board->getSquare($nX, $nY)->bombsInRange)){
-					array_push($reveal, array($nX, $nY));
-				}
-				array_push($queue, new SearchNode($nX-1, $nY-1, $nX, $nY));
-				array_push($queue, new SearchNode($nX, $nY-1, $nX, $nY));
-				array_push($queue, new SearchNode($nX+1, $nY-1, $nX, $nY));
-				array_push($queue, new SearchNode($nX+1, $nY, $nX, $nY));
-				array_push($queue, new SearchNode($nX+1, $nY+1, $nX, $nY));
-				array_push($queue, new SearchNode($nX, $nY+1, $nX, $nY));
-				array_push($queue, new SearchNode($nX-1, $nY+1, $nX, $nY));
-				array_push($queue, new SearchNode($nX-1, $nY, $nX, $nY));
-
-				array_shift($queue);
-			}else{
-				array_shift($queue);
-				continue;
-			}
 		}
+
+		// if node has been visited discard it and continue
+		if($visited[$nY][$nX] == true){
+			array_shift($queue);
+			continue;
+		}
+
+		// mark node as visited
+		$visited[$nY][$nX] = true;
+
+		// if node has bombs in range, end tree and add to clicked array, then move to next node
+		if(isset($board->getSquare($nX, $nY)->bombsInRange) && $board->getSquare($nX, $nY)->bombsInRange !== 0){
+			array_push($reveal, array($nX, $nY));
+			array_shift($queue);
+			continue;
+		}
+
+		// square has no bombs in range, add to clicked list
+		if(isset($board->getSquare($nX, $nY)->bombsInRange) && $board->getSquare($nX, $nY)->bombsInRange == 0){
+			array_push($reveal, array($nX, $nY));
+		}
+
+		// queue new nodes in all 8 directions
+		array_push($queue, new SearchNode($nX-1, $nY-1, $nX, $nY));
+		array_push($queue, new SearchNode($nX, $nY-1, $nX, $nY));
+		array_push($queue, new SearchNode($nX+1, $nY-1, $nX, $nY));
+		array_push($queue, new SearchNode($nX+1, $nY, $nX, $nY));
+		array_push($queue, new SearchNode($nX+1, $nY+1, $nX, $nY));
+		array_push($queue, new SearchNode($nX, $nY+1, $nX, $nY));
+		array_push($queue, new SearchNode($nX-1, $nY+1, $nX, $nY));
+		array_push($queue, new SearchNode($nX-1, $nY, $nX, $nY));
+
+		// remove searched node from queue
+		array_shift($queue);
 	}
+
+	// return list of clicked nodes
 	return $reveal;
 }
 
+// if no parameters are specified, prevent access
 die('{}');
 
+/**
+ * A class to easily track information for search nodes
+ * in the flood function.
+ *
+ * @see flood()
+ */
 class SearchNode{
+
+	/**
+	 * x,y coordinate of the node's search target
+	 * @var int
+	 */
 	public $x, $y;
+
+	/**
+	 * x,y coordinates of the node's search origin
+	 * @var int
+	 */
 	public $sourceX, $sourceY;
 
+	// assign variables
 	function __construct($_x, $_y, $_sourceX, $_sourceY){
 		$this->x = $_x;
 		$this->y = $_y;
