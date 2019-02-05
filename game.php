@@ -283,7 +283,7 @@ if($_GET['a'] == "gB"){
 		$b->flags++;
 
 	// if square isn't flagged, flag it and remove from flag count
-	}else if($b->flags >= 0){
+	}else if($b->flags > 0){
 		$sq->isFlagged = true;
 		$b->flags--;
 	}
